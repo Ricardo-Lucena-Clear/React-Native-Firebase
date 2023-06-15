@@ -13,14 +13,23 @@ import Login from './src/components/Login';
 import TaskList from './src/components/TaskList';
 
 let tasks = [
-  {key: '1', nome: 'Comprar Coca cola'},
-  {key: '2', nome: 'Estudar javascript' }
+  {key: '1123123', nome: 'Comprar Coca cola'},
+  {key: '22222', nome: 'Estudar javascript' }
 ]
 
 export default function App() {
   const [user, setUser] = useState(null);
 
   const [newTask, setNewTask] = useState('')
+
+
+  function handleDelete(key){
+    console.log(key);
+  }
+
+  function handleEdit(data){
+    console.log("ITEM CLICADO", data)
+  }
 
 
  if(!user){
@@ -47,7 +56,7 @@ export default function App() {
       data={tasks}
       keyExtractor={ item => item.key }
       renderItem={ ({ item }) => (
-        <TaskList data={item} />
+        <TaskList data={item} deleteItem={handleDelete} editItem={handleEdit} />
       )}
     />
 
