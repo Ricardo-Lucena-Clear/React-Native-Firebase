@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   View, 
   Text, 
@@ -6,22 +6,77 @@ import {
   SafeAreaView, 
   TextInput, 
   TouchableOpacity,
-  FlatList
+  FlatList,
+  Keyboard
  } from 'react-native';
 
 import Login from './src/components/Login';
 import TaskList from './src/components/TaskList';
 
-let tasks = [
-  {key: '1123123', nome: 'Comprar Coca cola'},
-  {key: '22222', nome: 'Estudar javascript' }
-]
+import firebase from './src/services/firebaseConnection';
 
 export default function App() {
   const [user, setUser] = useState(null);
+  const [tasks, setTasks] = useState([]);
 
   const [newTask, setNewTask] = useState('')
+  
 
+  useEffect(()=> {
+
+    function getUser(){
+
+      if(!user){
+        return;
+      }
+
+      firebase.database().ref('tarefas').child(user).once('value', (snapshot)=> {
+        setTasks([]);
+
+        snapshot?.forEach((childItem)=>{
+          let data = {
+            key: childItem.key,
+            nome: childItem.val().nome
+          }
+
+          setTasks(oldTasks => [...oldTasks, data])
+        })      
+
+      })
+
+    }
+
+
+    getUser();
+
+  }, [user])
+
+
+  function handleAdd(){
+    if(newTask === ''){
+      return;
+    }
+
+    let tarefas = firebase.database().ref('tarefas').child(user);
+    let chave = tarefas.push().key;
+
+    tarefas.child(chave).set({
+      nome: newTask
+    })
+    .then(()=>{
+      const data = {
+        key: chave,
+        nome: newTask
+      };
+
+      setTasks(oldTasks => [...oldTasks, data])
+
+    })
+
+    Keyboard.dismiss();
+    setNewTask('');
+
+  }
 
   function handleDelete(key){
     console.log(key);
@@ -46,7 +101,7 @@ export default function App() {
         value={newTask}
         onChangeText={ (text) =>  setNewTask(text) }
       />
-      <TouchableOpacity style={styles.buttonAdd}>
+      <TouchableOpacity style={styles.buttonAdd} onPress={handleAdd}>
         <Text style={styles.buttonText}>+</Text>
       </TouchableOpacity>
     </View>
